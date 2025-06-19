@@ -1,4 +1,4 @@
-# task-1
+# codealphas_task-1
 # 🌍 Multilingual Text Translator
 
 A simple and elegant web app built with React that allows users to input text, choose source and target languages, and get real-time translations using Microsoft Translator API. It also includes optional usability features like **copy to clipboard** and **text-to-speech**.
