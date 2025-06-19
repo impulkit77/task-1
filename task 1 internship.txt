@@ -1,0 +1,103 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+
+export default function TranslatorUI() {
+  const [text, setText] = useState('');
+  const [sourceLang, setSourceLang] = useState('en');
+  const [targetLang, setTargetLang] = useState('es');
+  const [translatedText, setTranslatedText] = useState('');
+
+  const languages = {
+    en: 'English',
+    es: 'Spanish',
+    fr: 'French',
+    hi: 'Hindi',
+    de: 'German',
+    zh: 'Chinese',
+    ja: 'Japanese',
+    // Add more if needed
+  };
+
+  const translateText = async () => {
+    try {
+      const response = await axios.post('https://api.cognitive.microsofttranslator.com/translate?api-version=3.0', 
+        [{
+          Text: text
+        }], {
+        params: {
+          from: sourceLang,
+          to: [targetLang],
+        },
+        headers: {
+          'Ocp-Apim-Subscription-Key': 'YOUR_API_KEY_HERE',
+          'Ocp-Apim-Subscription-Region': 'YOUR_RESOURCE_REGION',
+          'Content-Type': 'application/json',
+        }
+      });
+
+      const translated = response.data[0].translations[0].text;
+      setTranslatedText(translated);
+    } catch (error) {
+      console.error('Translation Error:', error);
+      setTranslatedText('Error occurred during translation.');
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(translatedText);
+  };
+
+  const speakText = () => {
+    const utterance = new SpeechSynthesisUtterance(translatedText);
+    utterance.lang = targetLang;
+    window.speechSynthesis.speak(utterance);
+  };
+
+  return (
+    <div className="p-6 max-w-xl mx-auto mt-10 bg-white rounded-xl shadow-md space-y-4">
+      <h2 className="text-2xl font-bold text-center">Multilingual Text Translator</h2>
+
+      <textarea
+        className="w-full p-2 border rounded"
+        rows="4"
+        placeholder="Enter text here..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+
+      <div className="flex justify-between">
+        <select value={sourceLang} onChange={(e) => setSourceLang(e.target.value)} className="p-2 border rounded">
+          {Object.entries(languages).map(([code, name]) => (
+            <option key={code} value={code}>{name}</option>
+          ))}
+        </select>
+
+        <span className="self-center">➡</span>
+
+        <select value={targetLang} onChange={(e) => setTargetLang(e.target.value)} className="p-2 border rounded">
+          {Object.entries(languages).map(([code, name]) => (
+            <option key={code} value={code}>{name}</option>
+          ))}
+        </select>
+      </div>
+
+      <button onClick={translateText} className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+        Translate
+      </button>
+
+      <div className="p-4 bg-gray-100 rounded text-lg">
+        <strong>Translated Text:</strong>
+        <p className="mt-2">{translatedText}</p>
+      </div>
+
+      <div className="flex justify-between">
+        <button onClick={copyToClipboard} className="bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600">
+          Copy
+        </button>
+        <button onClick={speakText} className="bg-purple-500 text-white px-4 py-1 rounded hover:bg-purple-600">
+          🔊 Speak
+        </button>
+      </div>
+    </div>
+  );
+}
